@@ -11,9 +11,24 @@ import { registrationRouter } from "./routes/registration.routes.js";
 import { ApiError } from "./utils/api-error.js";
 
 export const app = express();
+const allowedOrigins = new Set([
+  env.frontendUrl,
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+]);
 
 app.use(helmet());
-app.use(cors({ origin: env.frontendUrl, credentials: true }));
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.has(origin)) {
+      callback(null, true);
+      return;
+    }
+
+    callback(new ApiError(403, "Origin is not allowed by CORS"));
+  },
+  credentials: true,
+}));
 app.use("/api/payments/webhook", express.raw({ type: "application/json" }));
 app.use(express.json({ limit: "1mb" }));
 app.use(morgan(env.nodeEnv === "production" ? "combined" : "dev"));
