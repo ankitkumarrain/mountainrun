@@ -1,8 +1,10 @@
 "use client";
 
-import { useAuth, useUser } from "@clerk/nextjs";
+import { SignInButton, SignUpButton, useAuth, useUser } from "@clerk/nextjs";
+import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Field, inputClass, primaryLinkClass } from "../components/app-shell";
+import { Field, inputClass } from "../components/app-shell";
+import { authHeaders, getApiUrl, readApiError } from "../../lib/api";
 import { type FieldErrors, validateRegistrationForm } from "../../lib/validation";
 
 type CheckoutResponse = {
@@ -23,12 +25,10 @@ declare global {
   }
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:4000";
-
 const events = [
-  { label: "Monsoon Mountain Miles", value: "monsoon-mountain-miles", amount: "Rs. 499" },
-  { label: "Independence Endurance Run", value: "independence-endurance-run", amount: "Rs. 649" },
-  { label: "Himalayan Winter Sprint", value: "himalayan-winter-sprint", amount: "Rs. 399" },
+  { label: "Monsoon Mountain Miles", value: "monsoon-mountain-miles", amount: "₹499" },
+  { label: "Independence Endurance Run", value: "independence-endurance-run", amount: "₹649" },
+  { label: "Himalayan Winter Sprint", value: "himalayan-winter-sprint", amount: "₹399" },
 ];
 
 async function loadRazorpayScript() {
@@ -47,7 +47,7 @@ async function loadRazorpayScript() {
 
 function getFriendlyErrorMessage(error: unknown) {
   if (error instanceof TypeError && error.message === "Failed to fetch") {
-    return `Could not connect to the API at ${API_URL}. Please start the backend with "npm run api:dev".`;
+    return `Could not connect to the API at ${getApiUrl()}. Start the backend with npm run dev in backend/.`;
   }
 
   return error instanceof Error ? error.message : "Something went wrong";
@@ -58,25 +58,64 @@ function FieldError({ message }: { message?: string }) {
     return null;
   }
 
-  return <p className="mt-1 text-xs font-medium text-red-600">{message}</p>;
+  return <p className="mt-1.5 text-xs font-medium text-[var(--danger)]">{message}</p>;
 }
 
 export function PaymentRegistrationForm() {
-  const { getToken, isSignedIn } = useAuth();
+  const { getToken, isLoaded, isSignedIn } = useAuth();
   const { user } = useUser();
   const [status, setStatus] = useState<"idle" | "creating" | "paying" | "paid" | "error">("idle");
-  const [message, setMessage] = useState("Fill details and continue to Razorpay Checkout.");
+  const [message, setMessage] = useState("Complete the form and continue to secure checkout.");
   const [selectedEvent, setSelectedEvent] = useState(events[0].value);
   const [errors, setErrors] = useState<FieldErrors>({});
 
   const selectedAmount = useMemo(
-    () => events.find((event) => event.value === selectedEvent)?.amount ?? "Rs. 499",
+    () => events.find((event) => event.value === selectedEvent)?.amount ?? "₹499",
     [selectedEvent],
   );
 
   const defaultName = user?.fullName ?? user?.firstName ?? "";
   const defaultEmail = user?.primaryEmailAddress?.emailAddress ?? "";
   const defaultPhone = user?.primaryPhoneNumber?.phoneNumber ?? "";
+
+  if (!isLoaded) {
+    return (
+      <div className="card mt-10 p-10 text-center">
+        <p className="text-sm text-[var(--muted)]">Checking your session…</p>
+      </div>
+    );
+  }
+
+  if (!isSignedIn) {
+    return (
+      <div className="card mt-10 p-8 sm:p-10">
+        <p className="eyebrow">Account required</p>
+        <h2 className="mt-3 text-2xl font-semibold tracking-tight">Sign in to continue</h2>
+        <p className="mt-3 max-w-md text-sm leading-6 text-[var(--muted)]">
+          Create a free account with email and password. After sign-in you can register
+          and pay with UPI.
+        </p>
+        <div className="mt-8 flex flex-wrap gap-3">
+          <SignInButton mode="modal" forceRedirectUrl="/register">
+            <button className="btn btn-primary" type="button">
+              Sign in
+            </button>
+          </SignInButton>
+          <SignUpButton mode="modal" forceRedirectUrl="/register">
+            <button className="btn btn-secondary" type="button">
+              Create account
+            </button>
+          </SignUpButton>
+          <Link
+            className="btn btn-ghost"
+            href="/sign-up"
+          >
+            Full page sign-up
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   async function handleSubmit(formData: FormData) {
     const fieldErrors = validateRegistrationForm(formData);
@@ -90,23 +129,24 @@ export function PaymentRegistrationForm() {
 
     if (!isSignedIn) {
       setStatus("error");
-      setMessage("Please sign in with Clerk before registering for an event.");
+      setMessage("Please sign in before registering for an event.");
       return;
     }
 
     setStatus("creating");
-    setMessage("Creating registration and secure Razorpay order...");
+    setMessage("Creating registration and secure Razorpay order…");
 
     try {
       const token = await getToken();
-      const authHeaders: HeadersInit = {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      };
+      if (!token) {
+        throw new Error("Could not get auth token. Please sign in again.");
+      }
 
-      const registrationResponse = await fetch(`${API_URL}/api/registrations`, {
+      const headers = authHeaders(token);
+
+      const registrationResponse = await fetch(getApiUrl("/api/registrations"), {
         method: "POST",
-        headers: authHeaders,
+        headers,
         body: JSON.stringify({
           clerkId: user?.id,
           name: formData.get("name"),
@@ -124,22 +164,20 @@ export function PaymentRegistrationForm() {
       });
 
       if (!registrationResponse.ok) {
-        const error = await registrationResponse.json().catch(() => null);
-        throw new Error(error?.error?.message ?? "Registration failed");
+        throw new Error(await readApiError(registrationResponse, "Registration failed"));
       }
 
       const registrationJson = await registrationResponse.json();
       const registrationId = registrationJson.data.id as string;
 
-      const orderResponse = await fetch(`${API_URL}/api/payments/create-order`, {
+      const orderResponse = await fetch(getApiUrl("/api/payments/create-order"), {
         method: "POST",
-        headers: authHeaders,
+        headers,
         body: JSON.stringify({ registrationId }),
       });
 
       if (!orderResponse.ok) {
-        const error = await orderResponse.json().catch(() => null);
-        throw new Error(error?.error?.message ?? "Payment order failed");
+        throw new Error(await readApiError(orderResponse, "Payment order failed"));
       }
 
       const orderJson = await orderResponse.json();
@@ -151,7 +189,7 @@ export function PaymentRegistrationForm() {
       }
 
       setStatus("paying");
-      setMessage("Razorpay Checkout opened. Choose UPI for payment.");
+      setMessage("Checkout opened. Complete payment with UPI.");
 
       const checkout = new window.Razorpay({
         key: order.keyId,
@@ -171,17 +209,18 @@ export function PaymentRegistrationForm() {
           netbanking: true,
           wallet: true,
         },
-        theme: { color: "#151512" },
+        theme: { color: "#0a0a0a" },
         handler: async (response: CheckoutResponse) => {
-          const verifyResponse = await fetch(`${API_URL}/api/payments/verify`, {
+          const verifyResponse = await fetch(getApiUrl("/api/payments/verify"), {
             method: "POST",
-            headers: authHeaders,
+            headers,
             body: JSON.stringify(response),
           });
 
           if (!verifyResponse.ok) {
-            const error = await verifyResponse.json().catch(() => null);
-            throw new Error(error?.error?.message ?? "Payment captured but verification failed");
+            throw new Error(
+              await readApiError(verifyResponse, "Payment captured but verification failed"),
+            );
           }
 
           const verifyJson = await verifyResponse.json().catch(() => null);
@@ -190,8 +229,8 @@ export function PaymentRegistrationForm() {
           setStatus("paid");
           setMessage(
             emailSent
-              ? "Payment verified. Confirmation email sent to your inbox."
-              : "Payment verified. Registration confirmed. (Email could not be sent — check RESEND_API_KEY.)",
+              ? "Payment verified. Confirmation email sent."
+              : "Payment verified. Registration confirmed.",
           );
         },
         modal: {
@@ -210,8 +249,8 @@ export function PaymentRegistrationForm() {
   }
 
   return (
-    <form action={handleSubmit} className="mt-8 rounded-lg border hairline bg-[var(--panel)] p-5 soft-shadow" noValidate>
-      <div className="grid gap-4 md:grid-cols-2">
+    <form action={handleSubmit} className="card mt-10 p-6 sm:p-8" noValidate>
+      <div className="grid gap-5 sm:grid-cols-2">
         <Field label="Full name">
           <input
             aria-invalid={Boolean(errors.name)}
@@ -247,7 +286,12 @@ export function PaymentRegistrationForm() {
           <FieldError message={errors.phone} />
         </Field>
         <Field label="Distance">
-          <select aria-invalid={Boolean(errors.distance)} className={inputClass} name="distance" required>
+          <select
+            aria-invalid={Boolean(errors.distance)}
+            className={inputClass}
+            name="distance"
+            required
+          >
             <option value="">Select distance</option>
             <option value="5K">5K</option>
             <option value="10K">10K</option>
@@ -265,7 +309,9 @@ export function PaymentRegistrationForm() {
             value={selectedEvent}
           >
             {events.map((event) => (
-              <option key={event.value} value={event.value}>{event.label}</option>
+              <option key={event.value} value={event.value}>
+                {event.label}
+              </option>
             ))}
           </select>
           <FieldError message={errors.eventSlug} />
@@ -302,7 +348,7 @@ export function PaymentRegistrationForm() {
           />
           <FieldError message={errors.pincode} />
         </Field>
-        <div className="md:col-span-2">
+        <div className="sm:col-span-2">
           <Field label="Shipping address">
             <input
               aria-invalid={Boolean(errors.address)}
@@ -315,27 +361,33 @@ export function PaymentRegistrationForm() {
           </Field>
         </div>
       </div>
-      <div className="mt-5 rounded-lg border hairline bg-white p-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm font-semibold">Pay securely with Razorpay</p>
-            <p className={`mt-1 text-sm ${status === "error" ? "text-red-600" : "text-[var(--muted)]"}`}>{message}</p>
-          </div>
-          <p className="text-2xl font-semibold tracking-tight">{selectedAmount}</p>
+
+      <div className="mt-6 flex flex-col gap-3 rounded-xl border border-[var(--line)] bg-[var(--panel-soft)] p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm font-medium">Secure checkout</p>
+          <p
+            className={`mt-1 text-sm ${
+              status === "error" ? "text-[var(--danger)]" : "text-[var(--muted)]"
+            }`}
+          >
+            {message}
+          </p>
         </div>
+        <p className="text-2xl font-semibold tracking-tight">{selectedAmount}</p>
       </div>
+
       <button
-        className={`${primaryLinkClass} mt-5 w-full disabled:cursor-not-allowed disabled:opacity-60`}
+        className="btn btn-primary btn-full mt-6 disabled:cursor-not-allowed disabled:opacity-50"
         disabled={status === "creating" || status === "paying" || status === "paid"}
         type="submit"
       >
         {status === "creating"
-          ? "Creating order..."
+          ? "Creating order…"
           : status === "paying"
-            ? "Payment in progress..."
+            ? "Payment in progress…"
             : status === "paid"
               ? "Paid"
-              : "Continue to UPI payment"}
+              : "Continue to payment"}
       </button>
     </form>
   );

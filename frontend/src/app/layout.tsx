@@ -14,9 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Mountain Run | Virtual Running Event Platform",
+  title: "Mountain Run",
   description:
-    "Premium running event management platform for registrations, proof uploads, leaderboards, certificates, QR check-ins, and medal delivery.",
+    "Minimal virtual running events with UPI registration, GPS proof, leaderboards, certificates, and medals.",
   icons: {
     icon: "/favicon.svg",
   },
@@ -32,13 +32,20 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col bg-[var(--background)] text-[var(--foreground)]">
         <ClerkProvider
           appearance={{
             variables: {
-              colorPrimary: "#151512",
-              colorTextPrimary: "#151512",
-              borderRadius: "0.5rem",
+              colorPrimary: "#0a0a0a",
+              borderRadius: "0.75rem",
+            },
+            elements: {
+              card: "shadow-none border border-[var(--line)]",
+              headerTitle: "tracking-tight",
+              formButtonPrimary:
+                "bg-[var(--foreground)] hover:bg-[var(--accent-hover)] shadow-none",
+              footerActionLink: "text-[var(--foreground)] hover:text-[var(--muted)]",
+              socialButtonsBlockButton: "border-[var(--line)]",
             },
           }}
           signInUrl="/sign-in"

@@ -10,9 +10,13 @@ export type AuthenticatedRequest = Request & {
   };
 };
 
-const clerkClient = env.clerkSecretKey
+const clerkClient = env.clerkEnabled
   ? createClerkClient({ secretKey: env.clerkSecretKey })
   : null;
+
+function allowDevBypass() {
+  return env.nodeEnv !== "production" && !env.clerkEnabled;
+}
 
 export async function requireClerkAuth(
   request: AuthenticatedRequest,
@@ -20,12 +24,12 @@ export async function requireClerkAuth(
   next: NextFunction,
 ) {
   try {
-    if (!env.clerkSecretKey) {
+    if (!env.clerkEnabled) {
       if (env.nodeEnv === "production") {
         throw new ApiError(500, "Clerk is not configured on the server");
       }
 
-      // Allow local development without Clerk when secret is missing.
+      // Local development without real Clerk keys.
       next();
       return;
     }
@@ -42,6 +46,7 @@ export async function requireClerkAuth(
 
     const payload = await verifyToken(token, {
       secretKey: env.clerkSecretKey,
+      authorizedParties: [env.frontendUrl, "http://localhost:3000", "http://127.0.0.1:3000"],
     });
 
     if (!payload.sub) {
@@ -70,11 +75,12 @@ export async function requireAdmin(
   next: NextFunction,
 ) {
   try {
-    if (!env.clerkSecretKey || !clerkClient) {
-      if (env.nodeEnv !== "production") {
-        next();
-        return;
-      }
+    if (allowDevBypass()) {
+      next();
+      return;
+    }
+
+    if (!env.clerkEnabled || !clerkClient) {
       throw new ApiError(500, "Clerk is not configured on the server");
     }
 

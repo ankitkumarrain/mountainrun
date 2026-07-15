@@ -5,30 +5,31 @@ Mountain Run is split into a Next.js frontend and an Express/Prisma backend.
 ## Project structure
 
 ```text
-frontend/  Next.js app
-backend/   API server and Prisma schema
+frontend/  Next.js app (Clerk auth UI)
+backend/   API server, Prisma, Clerk token verification
 ```
+
+## Auth (Clerk)
+
+Clerk is already integrated. Add API keys from [dashboard.clerk.com](https://dashboard.clerk.com):
+
+1. Put `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` + `CLERK_SECRET_KEY` in `frontend/.env`
+2. Put the same `CLERK_SECRET_KEY` in `backend/.env`
+3. Full steps: [CLERK_SETUP.md](./CLERK_SETUP.md)
 
 ## Frontend
 
-Run from the repository root:
-
 ```bash
+cd frontend
+npm install
 npm run dev
-npm run build
-npm run lint
 ```
-
-You can also run the same commands directly inside `frontend/`.
 
 ## Backend
 
-Run API commands from the repository root:
-
 ```bash
-npm run api:dev
-npm run api:build
-npm run api:prisma:generate
-npm run api:prisma:migrate
-npm run api:prisma:seed
+cd backend
+npm install
+npm run prisma:generate
+npm run dev
 ```

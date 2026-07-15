@@ -1,31 +1,46 @@
 import { SignIn } from "@clerk/nextjs";
+import Link from "next/link";
 import { PageShell } from "../../components/app-shell";
 
 export default function SignInPage() {
   return (
     <PageShell>
-      <section className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:px-5 md:grid-cols-[1fr_440px] md:py-16">
-        <div className="self-center">
-          <p className="text-sm font-semibold text-[var(--accent-dark)]">Runner access</p>
-          <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">
-            Sign in to manage your run.
-          </h1>
-          <p className="mt-5 max-w-xl leading-7 text-[var(--muted)]">
-            Use your email and password to check registration status, upload GPS proof,
-            download certificates, and track medal delivery.
-          </p>
-        </div>
-        <div className="flex justify-center md:justify-end">
-          <SignIn
-            appearance={{
-              elements: {
-                rootBox: "w-full",
-                card: "shadow-none border hairline rounded-lg w-full",
-              },
-            }}
-            fallbackRedirectUrl="/register"
-            signUpUrl="/sign-up"
-          />
+      <section className="section">
+        <div className="container-page">
+          <div className="mx-auto grid max-w-5xl items-center gap-12 lg:grid-cols-2 lg:gap-20">
+            <div className="max-w-md">
+              <p className="eyebrow">Welcome back</p>
+              <h1 className="display mt-4">Sign in</h1>
+              <p className="lede mt-5">
+                Access your registrations, upload GPS proof, download certificates,
+                and track medal delivery.
+              </p>
+              <p className="mt-8 text-sm text-[var(--muted)]">
+                New here?{" "}
+                <Link
+                  className="font-medium text-[var(--foreground)] underline-offset-4 hover:underline"
+                  href="/sign-up"
+                >
+                  Create an account
+                </Link>
+              </p>
+            </div>
+
+            <div className="flex justify-center lg:justify-end">
+              <div className="auth-card w-full">
+                <SignIn
+                  appearance={{
+                    elements: {
+                      rootBox: "w-full",
+                      card: "w-full",
+                    },
+                  }}
+                  fallbackRedirectUrl="/register"
+                  signUpUrl="/sign-up"
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </PageShell>

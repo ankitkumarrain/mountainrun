@@ -1,5 +1,29 @@
 import "dotenv/config";
 
+function readEnv(name: string, fallback = "") {
+  return (process.env[name] ?? fallback).trim();
+}
+
+/** True when a real Clerk secret is set (not empty / placeholder). */
+export function isClerkConfigured(secretKey = readEnv("CLERK_SECRET_KEY")) {
+  if (!secretKey) {
+    return false;
+  }
+
+  const lower = secretKey.toLowerCase();
+  if (
+    lower.includes("your_") ||
+    lower.includes("placeholder") ||
+    lower.endsWith("...") ||
+    lower === "sk_test_..." ||
+    lower === "sk_live_..."
+  ) {
+    return false;
+  }
+
+  return secretKey.startsWith("sk_");
+}
+
 export const env = {
   port: Number(process.env.PORT ?? 4000),
   frontendUrl: process.env.FRONTEND_URL ?? "http://localhost:3000",
@@ -10,6 +34,9 @@ export const env = {
   resendApiKey: process.env.RESEND_API_KEY ?? "",
   resendFromEmail:
     process.env.RESEND_FROM_EMAIL ?? "Mountain Run <onboarding@resend.dev>",
-  clerkSecretKey: process.env.CLERK_SECRET_KEY ?? "",
-  clerkPublishableKey: process.env.CLERK_PUBLISHABLE_KEY ?? "",
+  clerkSecretKey: readEnv("CLERK_SECRET_KEY"),
+  clerkPublishableKey: readEnv("CLERK_PUBLISHABLE_KEY"),
+  get clerkEnabled() {
+    return isClerkConfigured(this.clerkSecretKey);
+  },
 };

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Field, inputClass, primaryLinkClass } from "../components/app-shell";
+import { Field, inputClass } from "../components/app-shell";
 import { type FieldErrors, validateAdminEventForm } from "../../lib/validation";
 
 function FieldError({ message }: { message?: string }) {
@@ -9,7 +9,7 @@ function FieldError({ message }: { message?: string }) {
     return null;
   }
 
-  return <p className="mt-1 text-xs font-medium text-red-600">{message}</p>;
+  return <p className="mt-1.5 text-xs font-medium text-[var(--danger)]">{message}</p>;
 }
 
 export function AdminEventForm() {
@@ -25,13 +25,21 @@ export function AdminEventForm() {
       return;
     }
 
-    setMessage(`Event "${String(formData.get("title")).trim()}" saved (demo). Connect API to persist.`);
+    setMessage(
+      `Event "${String(formData.get("title")).trim()}" saved (demo). Connect API to persist.`,
+    );
   }
 
   return (
-    <form action={handleSubmit} className="rounded-lg border hairline bg-[var(--panel)] p-5" id="new-event" noValidate>
-      <h2 className="text-lg font-semibold">New event</h2>
-      <div className="mt-5 grid gap-4">
+    <form
+      action={handleSubmit}
+      className="card p-6"
+      id="new-event"
+      noValidate
+    >
+      <p className="eyebrow">Create</p>
+      <h2 className="mt-2 text-lg font-semibold tracking-tight">New event</h2>
+      <div className="mt-6 grid gap-4">
         <Field label="Event title">
           <input
             aria-invalid={Boolean(errors.title)}
@@ -65,11 +73,15 @@ export function AdminEventForm() {
         </Field>
       </div>
       {message ? (
-        <p className={`mt-4 text-sm ${Object.keys(errors).length ? "text-red-600" : "text-[var(--muted)]"}`}>
+        <p
+          className={`mt-4 text-sm ${
+            Object.keys(errors).length ? "text-[var(--danger)]" : "text-[var(--muted)]"
+          }`}
+        >
           {message}
         </p>
       ) : null}
-      <button className={`${primaryLinkClass} mt-5 w-full`} type="submit">
+      <button className="btn btn-primary btn-full mt-6" type="submit">
         Save event
       </button>
     </form>

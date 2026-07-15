@@ -1,7 +1,6 @@
 "use client";
 
 import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -14,20 +13,20 @@ const navItems = [
 
 function MenuIcon({ open }: { open: boolean }) {
   return (
-    <span className="relative block h-5 w-5" aria-hidden="true">
+    <span className="relative block h-4 w-5" aria-hidden="true">
       <span
-        className={`absolute left-0 top-1 block h-0.5 w-5 rounded-full bg-current transition ${
-          open ? "translate-y-2 rotate-45" : ""
+        className={`absolute left-0 top-0.5 block h-px w-5 bg-current transition ${
+          open ? "translate-y-[7px] rotate-45" : ""
         }`}
       />
       <span
-        className={`absolute left-0 top-2.5 block h-0.5 w-5 rounded-full bg-current transition ${
+        className={`absolute left-0 top-[9px] block h-px w-5 bg-current transition ${
           open ? "opacity-0" : ""
         }`}
       />
       <span
-        className={`absolute left-0 top-4 block h-0.5 w-5 rounded-full bg-current transition ${
-          open ? "-translate-y-1.5 -rotate-45" : ""
+        className={`absolute left-0 top-[15px] block h-px w-5 bg-current transition ${
+          open ? "-translate-y-[7px] -rotate-45" : ""
         }`}
       />
     </span>
@@ -39,53 +38,54 @@ export function AppHeader() {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-40 border-b hairline bg-[rgba(247,246,242,0.9)] backdrop-blur-xl">
-      <div className="mx-auto max-w-7xl px-4 sm:px-5">
-        <div className="flex min-h-16 items-center justify-between gap-3 py-3">
-          <Link className="flex min-w-0 items-center gap-3" href="/" onClick={() => setOpen(false)}>
-            <Image className="h-10 w-auto shrink-0" src="/logo.svg" alt="Mountain Run" width={157} height={40} priority />
+    <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-[rgba(250,250,249,0.85)] backdrop-blur-xl">
+      <div className="container-page">
+        <div className="flex h-16 items-center justify-between gap-4">
+          <Link
+            className="group flex items-center gap-2.5"
+            href="/"
+            onClick={() => setOpen(false)}
+          >
+            <span className="grid h-8 w-8 place-items-center rounded-full bg-[var(--foreground)] text-[0.65rem] font-semibold tracking-wide text-white">
+              MR
+            </span>
+            <span className="text-sm font-semibold tracking-tight">Mountain Run</span>
           </Link>
 
           <nav className="hidden items-center gap-1 md:flex">
-            {navItems.map(([label, href]) => (
-              <Link
-                className={`rounded-lg px-3 py-2 text-sm transition ${
-                  pathname === href
-                    ? "bg-white text-[var(--foreground)]"
-                    : "text-[var(--muted)] hover:bg-white hover:text-[var(--foreground)]"
-                }`}
-                href={href}
-                key={href}
-              >
-                {label}
-              </Link>
-            ))}
+            {navItems.map(([label, href]) => {
+              const active = pathname === href || pathname.startsWith(`${href}/`);
+              return (
+                <Link
+                  className={`rounded-full px-3.5 py-2 text-sm transition ${
+                    active
+                      ? "bg-[var(--panel)] text-[var(--foreground)] shadow-[var(--shadow)]"
+                      : "text-[var(--muted)] hover:text-[var(--foreground)]"
+                  }`}
+                  href={href}
+                  key={href}
+                >
+                  {label}
+                </Link>
+              );
+            })}
           </nav>
 
-          <div className="hidden shrink-0 items-center gap-2 sm:flex">
+          <div className="hidden items-center gap-2 sm:flex">
             <Show when="signed-out">
               <SignInButton mode="modal">
-                <button
-                  className="rounded-lg px-3 py-2 text-sm font-semibold text-[var(--muted)] transition hover:bg-white hover:text-[var(--foreground)]"
-                  type="button"
-                >
+                <button className="btn btn-ghost h-9 px-3" type="button">
                   Sign in
                 </button>
               </SignInButton>
               <SignUpButton mode="modal">
-                <button
-                  className="rounded-lg bg-[var(--foreground)] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[var(--accent-dark)]"
-                  type="button"
-                >
+                <button className="btn btn-primary h-9 px-4" type="button">
                   Sign up
                 </button>
               </SignUpButton>
             </Show>
             <Show when="signed-in">
-              <Link
-                className="rounded-lg bg-[var(--foreground)] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[var(--accent-dark)]"
-                href="/register"
-              >
+              <Link className="btn btn-primary h-9 px-4" href="/register">
                 Register
               </Link>
               <UserButton
@@ -100,8 +100,8 @@ export function AppHeader() {
 
           <button
             aria-expanded={open}
-            aria-label={open ? "Close navigation menu" : "Open navigation menu"}
-            className="focus-ring inline-flex h-10 w-10 items-center justify-center rounded-lg border hairline bg-white text-[var(--foreground)] md:hidden"
+            aria-label={open ? "Close menu" : "Open menu"}
+            className="focus-ring inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--line)] bg-white text-[var(--foreground)] md:hidden"
             onClick={() => setOpen((value) => !value)}
             type="button"
           >
@@ -114,26 +114,29 @@ export function AppHeader() {
             open ? "max-h-96 pb-4 opacity-100" : "max-h-0 opacity-0"
           }`}
         >
-          <nav className="grid gap-1 rounded-lg border hairline bg-[var(--panel)] p-2 soft-shadow">
-            {navItems.map(([label, href]) => (
-              <Link
-                className={`rounded-lg px-3 py-3 text-sm font-medium transition ${
-                  pathname === href
-                    ? "bg-[var(--foreground)] text-white"
-                    : "text-[var(--muted)] hover:bg-white hover:text-[var(--foreground)]"
-                }`}
-                href={href}
-                key={href}
-                onClick={() => setOpen(false)}
-              >
-                {label}
-              </Link>
-            ))}
-            <div className="mt-2 grid grid-cols-2 gap-2 border-t hairline pt-2">
+          <nav className="grid gap-1 rounded-2xl border border-[var(--line)] bg-white p-2 shadow-[var(--shadow)]">
+            {navItems.map(([label, href]) => {
+              const active = pathname === href || pathname.startsWith(`${href}/`);
+              return (
+                <Link
+                  className={`rounded-xl px-3 py-3 text-sm font-medium transition ${
+                    active
+                      ? "bg-[var(--foreground)] text-white"
+                      : "text-[var(--muted)] hover:bg-[var(--panel-soft)] hover:text-[var(--foreground)]"
+                  }`}
+                  href={href}
+                  key={href}
+                  onClick={() => setOpen(false)}
+                >
+                  {label}
+                </Link>
+              );
+            })}
+            <div className="mt-1 grid grid-cols-2 gap-2 border-t border-[var(--line)] pt-2">
               <Show when="signed-out">
                 <SignInButton mode="modal">
                   <button
-                    className="rounded-lg border hairline bg-white px-3 py-3 text-center text-sm font-semibold text-[var(--foreground)]"
+                    className="btn btn-secondary h-11 w-full"
                     onClick={() => setOpen(false)}
                     type="button"
                   >
@@ -142,7 +145,7 @@ export function AppHeader() {
                 </SignInButton>
                 <SignUpButton mode="modal">
                   <button
-                    className="rounded-lg bg-[var(--foreground)] px-3 py-3 text-center text-sm font-semibold text-white"
+                    className="btn btn-primary h-11 w-full"
                     onClick={() => setOpen(false)}
                     type="button"
                   >
@@ -152,7 +155,7 @@ export function AppHeader() {
               </Show>
               <Show when="signed-in">
                 <Link
-                  className="col-span-2 rounded-lg bg-[var(--foreground)] px-3 py-3 text-center text-sm font-semibold text-white"
+                  className="btn btn-primary col-span-2 h-11"
                   href="/register"
                   onClick={() => setOpen(false)}
                 >
