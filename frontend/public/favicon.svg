@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="14" fill="#151512"/>
-  <path d="M15 43 27 23l7 11 5-8 10 17H15Z" fill="#F3DFC9"/>
-  <path d="M27 23 15 43h21L27 23Z" fill="#B76E2A"/>
-  <circle cx="42" cy="17" r="5" fill="#FFFDFA"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Mountain Run">
+  <rect width="64" height="64" rx="14" fill="#101513"/>
+  <path d="M12 46 26 22l8 12 6-9 12 21H12Z" fill="#fff"/>
+  <path d="M12 46 26 22l8 12-5 12H12Z" fill="#F7B733"/>
+  <circle cx="44" cy="18" r="5" fill="#F7B733"/>
 </svg>

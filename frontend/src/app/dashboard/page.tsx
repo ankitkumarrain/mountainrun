@@ -1,12 +1,12 @@
 import { PageShell } from "../components/app-shell";
-import { LeaderboardClient } from "./leaderboard-client";
+import { DashboardClient } from "./dashboard-client";
 
-export default function LeaderboardPage() {
+export default function DashboardPage() {
   return (
     <PageShell>
       <section className="section">
         <div className="container-page max-w-5xl">
-          <LeaderboardClient />
+          <DashboardClient />
         </div>
       </section>
     </PageShell>

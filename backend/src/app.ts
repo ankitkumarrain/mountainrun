@@ -8,6 +8,7 @@ import { dashboardRouter } from "./routes/dashboard.routes.js";
 import { eventRouter } from "./routes/event.routes.js";
 import { paymentRouter } from "./routes/payment.routes.js";
 import { registrationRouter } from "./routes/registration.routes.js";
+import { userRouter } from "./routes/user.routes.js";
 import { ApiError } from "./utils/api-error.js";
 
 export const app = express();
@@ -60,6 +61,7 @@ app.get("/health", (_request, response) => {
 });
 
 app.use("/api/events", eventRouter);
+app.use("/api/users", userRouter);
 app.use("/api/registrations", registrationRouter);
 app.use("/api/payments", paymentRouter);
 app.use("/api/dashboard", dashboardRouter);

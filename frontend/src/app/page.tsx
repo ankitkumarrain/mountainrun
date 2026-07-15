@@ -1,105 +1,69 @@
 import Link from "next/link";
-import { AppFooter } from "./components/app-shell";
+import { AppFooter } from "./components/app-footer";
 import { AppHeader } from "./components/app-header";
 import { publicEvents } from "./data/events";
+import { HomeCtas } from "./components/home-ctas";
 
 const steps = [
   {
     step: "01",
-    title: "Register",
-    text: "Pick an event and distance. Pay securely with UPI via Razorpay.",
+    title: "Create account & register",
+    text: "Sign in once, pick an event and distance, pay with UPI.",
   },
   {
     step: "02",
-    title: "Run & prove",
-    text: "Complete your run anywhere, then upload a GPS activity screenshot.",
+    title: "Run & upload proof",
+    text: "Finish anywhere, then submit your GPS activity screenshot.",
   },
   {
     step: "03",
-    title: "Get ranked",
-    text: "After verification, claim your certificate, rank, and medal.",
-  },
-];
-
-const perks = [
-  {
-    title: "Verified finishes",
-    text: "GPS proof is reviewed before results go public.",
-  },
-  {
-    title: "Fair leaderboard",
-    text: "Only approved efforts appear in the rankings.",
-  },
-  {
-    title: "Digital certificate",
-    text: "QR-linked e-certificate after approval.",
-  },
-  {
-    title: "Medal delivery",
-    text: "Eligible finishers get dispatch tracking.",
+    title: "Rank, certificate, medal",
+    text: "After verification, you appear on the leaderboard and unlock rewards.",
   },
 ];
 
 export default function Home() {
+  // Only preview first 3 events — full list lives on /events (no duplicate page feel)
+  const previewEvents = publicEvents.slice(0, 3);
+
   return (
     <div className="page-shell flex min-h-screen flex-col">
       <AppHeader />
 
       <main className="flex-1">
-        {/* Hero — text only, no image */}
         <section className="border-b border-[var(--line)]">
-          <div className="container-page fade-up py-20 md:py-28 lg:py-32">
+          <div className="container-page fade-up py-14 sm:py-20 md:py-28 lg:py-32">
             <div className="mx-auto max-w-3xl text-center">
               <p className="eyebrow">Virtual running events</p>
-              <h1 className="display mt-6">
+              <h1 className="display mt-4 sm:mt-6">
                 Run anywhere.
                 <br />
                 Finish with proof.
               </h1>
-              <p className="lede mx-auto mt-6 max-w-xl">
-                Clean virtual races with UPI registration, GPS verification,
-                leaderboards, certificates, and medals — without the noise.
+              <p className="lede mx-auto mt-4 max-w-xl px-1 sm:mt-6">
+                Clean virtual races — UPI registration, GPS verification, leaderboards,
+                certificates, and medals.
               </p>
-              <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                <Link className="btn btn-primary min-w-[10rem]" href="/register">
-                  Register now
-                </Link>
-                <Link className="btn btn-secondary min-w-[10rem]" href="/events">
-                  Browse events
-                </Link>
-              </div>
-            </div>
-
-            <div className="mx-auto mt-16 grid max-w-3xl grid-cols-2 gap-px overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--line)] sm:grid-cols-4">
-              {[
-                ["2,480", "Finishers"],
-                ["14", "Events"],
-                ["24h", "Review"],
-                ["UPI", "Payments"],
-              ].map(([value, label]) => (
-                <div className="bg-[var(--panel)] px-4 py-5 text-center" key={label}>
-                  <p className="text-xl font-semibold tracking-tight sm:text-2xl">{value}</p>
-                  <p className="mt-1 text-xs text-[var(--muted)]">{label}</p>
-                </div>
-              ))}
+              <HomeCtas />
             </div>
           </div>
         </section>
 
-        {/* How it works */}
         <section className="section">
           <div className="container-page">
             <div className="max-w-xl">
               <p className="eyebrow">How it works</p>
-              <h2 className="heading mt-4">Three steps. No clutter.</h2>
+              <h2 className="heading mt-3 sm:mt-4">Three steps</h2>
             </div>
-            <div className="mt-12 grid gap-6 md:grid-cols-3">
+            <div className="mt-8 grid gap-4 sm:mt-12 sm:gap-6 md:grid-cols-3">
               {steps.map((item) => (
-                <div className="card p-6" key={item.step}>
+                <div className="card p-5 sm:p-6" key={item.step}>
                   <p className="text-xs font-medium tracking-[0.14em] text-[var(--muted-soft)]">
                     {item.step}
                   </p>
-                  <h3 className="mt-4 text-lg font-semibold tracking-tight">{item.title}</h3>
+                  <h3 className="mt-3 text-base font-semibold tracking-tight sm:mt-4 sm:text-lg">
+                    {item.title}
+                  </h3>
                   <p className="mt-2 text-sm leading-6 text-[var(--muted)]">{item.text}</p>
                 </div>
               ))}
@@ -107,89 +71,66 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Events */}
         <section className="section border-y border-[var(--line)] bg-white">
           <div className="container-page">
-            <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
+            <div className="flex flex-col justify-between gap-4 sm:gap-6 md:flex-row md:items-end">
               <div className="max-w-xl">
                 <p className="eyebrow">Upcoming</p>
-                <h2 className="heading mt-4">Open events</h2>
+                <h2 className="heading mt-3 sm:mt-4">Open events</h2>
                 <p className="lede mt-3">
-                  Choose a distance, register once, and run on your own schedule.
+                  Full catalogue, distances, and details live on the Events page.
                 </p>
               </div>
-              <Link className="btn btn-secondary" href="/events">
-                View all
+              <Link className="btn btn-secondary w-full sm:w-auto" href="/events">
+                View all events
               </Link>
             </div>
 
-            <div className="mt-12 grid gap-5 md:grid-cols-3">
-              {publicEvents.map((event) => (
-                <article className="card card-hover flex flex-col p-6" key={event.slug}>
+            <div className="mt-8 grid gap-4 sm:mt-12 sm:gap-5 md:grid-cols-3">
+              {previewEvents.map((event) => (
+                <article className="card card-hover flex flex-col p-5 sm:p-6" key={event.slug}>
                   <div className="flex items-center justify-between gap-3">
                     <span className="badge">{event.date}</span>
                     <span className="text-sm font-medium tracking-tight">{event.price}</span>
                   </div>
-                  <h3 className="mt-6 text-xl font-semibold tracking-tight">{event.name}</h3>
+                  <h3 className="mt-5 text-lg font-semibold tracking-tight sm:mt-6 sm:text-xl">
+                    {event.name}
+                  </h3>
                   <p className="mt-2 text-sm text-[var(--muted)]">{event.distance}</p>
-                  <p className="mt-4 flex-1 text-sm leading-6 text-[var(--muted)]">
+                  <p className="mt-3 flex-1 text-sm leading-6 text-[var(--muted)] sm:mt-4">
                     {event.highlight}
                   </p>
-                  <div className="mt-6 flex gap-2">
-                    <Link className="btn btn-primary flex-1" href={`/events/${event.slug}`}>
-                      Details
-                    </Link>
-                    <Link className="btn btn-secondary flex-1" href="/register">
-                      Register
-                    </Link>
-                  </div>
+                  <Link className="btn btn-primary mt-5 w-full sm:mt-6" href={`/events/${event.slug}`}>
+                    View event
+                  </Link>
                 </article>
               ))}
             </div>
           </div>
         </section>
 
-        {/* Perks */}
-        <section className="section">
+        <section className="pb-14 pt-12 sm:pb-20 sm:pt-16 md:pb-28 md:pt-20">
           <div className="container-page">
-            <div className="max-w-xl">
-              <p className="eyebrow">Included</p>
-              <h2 className="heading mt-4">Everything after the finish line.</h2>
-            </div>
-            <div className="mt-12 grid gap-px overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--line)] sm:grid-cols-2">
-              {perks.map((perk) => (
-                <div className="bg-[var(--panel)] p-7" key={perk.title}>
-                  <h3 className="text-base font-semibold tracking-tight">{perk.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-[var(--muted)]">{perk.text}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* CTA */}
-        <section className="pb-20 md:pb-28">
-          <div className="container-page">
-            <div className="rounded-3xl bg-[var(--foreground)] px-8 py-14 text-center text-white sm:px-12">
-              <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-                Ready for your next run?
+            <div className="rounded-2xl bg-[var(--foreground)] px-5 py-10 text-center text-white sm:rounded-3xl sm:px-12 sm:py-14">
+              <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl md:text-4xl">
+                Track everything after you log in
               </h2>
-              <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-white/65">
-                Create an account, register for an open event, and pay with UPI in
-                under a minute.
+              <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-white/65 sm:mt-4">
+                Dashboard shows your registrations, payment status, and next steps — so login
+                actually pays off.
               </p>
-              <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <div className="btn-row mt-6 justify-center sm:mt-8">
                 <Link
-                  className="btn min-w-[10rem] bg-white text-[var(--foreground)] hover:bg-white/90"
-                  href="/register"
+                  className="btn bg-white text-[var(--foreground)] hover:bg-white/90"
+                  href="/dashboard"
                 >
-                  Start registration
+                  Open dashboard
                 </Link>
                 <Link
-                  className="btn min-w-[10rem] border border-white/20 bg-transparent text-white hover:bg-white/10"
-                  href="/sign-up"
+                  className="btn border border-white/20 bg-transparent text-white hover:bg-white/10"
+                  href="/events"
                 >
-                  Create account
+                  Browse events
                 </Link>
               </div>
             </div>

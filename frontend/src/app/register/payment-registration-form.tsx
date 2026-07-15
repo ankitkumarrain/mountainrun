@@ -88,14 +88,16 @@ export function PaymentRegistrationForm() {
 
   if (!isSignedIn) {
     return (
-      <div className="card mt-10 p-8 sm:p-10">
+      <div className="card mt-6 p-5 sm:mt-10 sm:p-10">
         <p className="eyebrow">Account required</p>
-        <h2 className="mt-3 text-2xl font-semibold tracking-tight">Sign in to continue</h2>
+        <h2 className="mt-3 text-xl font-semibold tracking-tight sm:text-2xl">
+          Sign in to continue
+        </h2>
         <p className="mt-3 max-w-md text-sm leading-6 text-[var(--muted)]">
           Create a free account with email and password. After sign-in you can register
           and pay with UPI.
         </p>
-        <div className="mt-8 flex flex-wrap gap-3">
+        <div className="btn-row mt-6 sm:mt-8">
           <Link className="btn btn-primary" href="/sign-in">
             Sign in
           </Link>
@@ -239,8 +241,8 @@ export function PaymentRegistrationForm() {
   }
 
   return (
-    <form action={handleSubmit} className="card mt-10 p-6 sm:p-8" noValidate>
-      <div className="grid gap-5 sm:grid-cols-2">
+    <form action={handleSubmit} className="card mt-6 p-4 sm:mt-10 sm:p-8" noValidate>
+      <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
         <Field label="Full name">
           <input
             aria-invalid={Boolean(errors.name)}

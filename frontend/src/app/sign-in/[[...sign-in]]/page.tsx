@@ -6,10 +6,10 @@ export default function SignInPage() {
   return (
     <PageShell>
       <section className="section">
-        <div className="container-page">
+        <div className="container-page px-4">
           <div className="mx-auto flex max-w-md flex-col items-center text-center">
             <p className="eyebrow">Welcome back</p>
-            <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
+            <h1 className="mt-3 text-2xl font-semibold tracking-tight sm:text-4xl">
               Sign in
             </h1>
             <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
@@ -17,7 +17,7 @@ export default function SignInPage() {
             </p>
           </div>
 
-          <div className="mx-auto mt-8 flex w-full max-w-[400px] justify-center">
+          <div className="mx-auto mt-6 flex w-full max-w-[400px] justify-center sm:mt-8">
             <SignIn
               fallbackRedirectUrl="/register"
               forceRedirectUrl="/register"

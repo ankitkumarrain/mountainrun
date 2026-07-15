@@ -7,6 +7,135 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id            String         @id @default(cuid())
+  name          String
+  email         String         @unique
+  phone         String?
+  role          UserRole       @default(RUNNER)
+  avatarUrl     String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  clerkId       String?        @unique
+  registrations Registration[]
+}
+
+model Event {
+  id             String         @id @default(cuid())
+  title          String
+  slug           String         @unique
+  description    String
+  status         EventStatus    @default(DRAFT)
+  startsAt       DateTime
+  endsAt         DateTime
+  proofClosesAt  DateTime
+  distances      String[]
+  priceInPaise   Int
+  medalIncluded  Boolean        @default(true)
+  city           String?
+  bannerImageUrl String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  registrations  Registration[]
+}
+
+model Registration {
+  id                String             @id @default(cuid())
+  bibNumber         String             @unique
+  userId            String
+  eventId           String
+  distance          String
+  status            RegistrationStatus @default(PENDING_PAYMENT)
+  proofStatus       ProofStatus        @default(NOT_SUBMITTED)
+  registeredAt      DateTime           @default(now())
+  finishTimeSeconds Int?
+  shippingName      String
+  shippingPhone     String
+  shippingLine1     String
+  shippingLine2     String?
+  shippingCity      String
+  shippingState     String
+  shippingPincode   String
+  certificate       Certificate?
+  medalDelivery     MedalDelivery?
+  payment           Payment?
+  proofUpload       ProofUpload?
+  event             Event              @relation(fields: [eventId], references: [id])
+  user              User               @relation(fields: [userId], references: [id])
+
+  @@unique([userId, eventId, distance])
+  @@index([eventId, proofStatus])
+  @@index([eventId, finishTimeSeconds])
+}
+
+model Payment {
+  id                String        @id @default(cuid())
+  registrationId    String        @unique
+  razorpayOrderId   String        @unique
+  razorpayPaymentId String?
+  razorpaySignature String?
+  amountInPaise     Int
+  status            PaymentStatus @default(CREATED)
+  paidAt            DateTime?
+  createdAt         DateTime      @default(now())
+  registration      Registration  @relation(fields: [registrationId], references: [id])
+}
+
+model ProofUpload {
+  id               String       @id @default(cuid())
+  registrationId   String       @unique
+  activityImageUrl String
+  sourceApp        String
+  submittedAt      DateTime     @default(now())
+  reviewedAt       DateTime?
+  reviewerNote     String?
+  status           ProofStatus  @default(SUBMITTED)
+  registration     Registration @relation(fields: [registrationId], references: [id])
+}
+
+model Certificate {
+  id                String            @id @default(cuid())
+  registrationId    String            @unique
+  certificateNumber String            @unique
+  pdfUrl            String?
+  qrPayload         String
+  status            CertificateStatus @default(QUEUED)
+  issuedAt          DateTime?
+  registration      Registration      @relation(fields: [registrationId], references: [id])
+}
+
+model MedalDelivery {
+  id             String       @id @default(cuid())
+  registrationId String       @unique
+  courier        String?
+  trackingNumber String?
+  trackingUrl    String?
+  status         MedalStatus  @default(PENDING)
+  dispatchedAt   DateTime?
+  deliveredAt    DateTime?
+  registration   Registration @relation(fields: [registrationId], references: [id])
+}
+
+model Coupon {
+  id             String    @id @default(cuid())
+  code           String    @unique
+  discountPaise  Int
+  maxRedemptions Int?
+  redeemedCount  Int       @default(0)
+  expiresAt      DateTime?
+  createdAt      DateTime  @default(now())
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String?
+  channel   String
+  title     String
+  body      String
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+}
+
 enum UserRole {
   RUNNER
   ADMIN
@@ -54,133 +183,4 @@ enum MedalStatus {
   DISPATCHED
   DELIVERED
   RETURNED
-}
-
-model User {
-  id            String         @id @default(cuid())
-  clerkId       String?        @unique
-  name          String
-  email         String         @unique
-  phone         String?
-  role          UserRole       @default(RUNNER)
-  avatarUrl     String?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  registrations Registration[]
-}
-
-model Event {
-  id             String         @id @default(cuid())
-  title          String
-  slug           String         @unique
-  description    String
-  status         EventStatus    @default(DRAFT)
-  startsAt       DateTime
-  endsAt         DateTime
-  proofClosesAt  DateTime
-  distances      String[]
-  priceInPaise   Int
-  medalIncluded  Boolean        @default(true)
-  city           String?
-  bannerImageUrl String?
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  registrations  Registration[]
-}
-
-model Registration {
-  id                 String             @id @default(cuid())
-  bibNumber          String             @unique
-  userId             String
-  eventId            String
-  distance           String
-  status             RegistrationStatus @default(PENDING_PAYMENT)
-  proofStatus        ProofStatus        @default(NOT_SUBMITTED)
-  registeredAt       DateTime           @default(now())
-  finishTimeSeconds  Int?
-  shippingName       String
-  shippingPhone      String
-  shippingLine1      String
-  shippingLine2      String?
-  shippingCity       String
-  shippingState      String
-  shippingPincode    String
-  user               User               @relation(fields: [userId], references: [id])
-  event              Event              @relation(fields: [eventId], references: [id])
-  payment            Payment?
-  proofUpload        ProofUpload?
-  certificate        Certificate?
-  medalDelivery      MedalDelivery?
-
-  @@unique([userId, eventId, distance])
-  @@index([eventId, proofStatus])
-  @@index([eventId, finishTimeSeconds])
-}
-
-model Payment {
-  id                  String        @id @default(cuid())
-  registrationId      String        @unique
-  razorpayOrderId     String        @unique
-  razorpayPaymentId   String?
-  razorpaySignature   String?
-  amountInPaise       Int
-  status              PaymentStatus @default(CREATED)
-  paidAt              DateTime?
-  createdAt           DateTime      @default(now())
-  registration        Registration  @relation(fields: [registrationId], references: [id])
-}
-
-model ProofUpload {
-  id              String       @id @default(cuid())
-  registrationId  String       @unique
-  activityImageUrl String
-  sourceApp       String
-  submittedAt     DateTime     @default(now())
-  reviewedAt      DateTime?
-  reviewerNote    String?
-  status          ProofStatus  @default(SUBMITTED)
-  registration    Registration @relation(fields: [registrationId], references: [id])
-}
-
-model Certificate {
-  id                String            @id @default(cuid())
-  registrationId    String            @unique
-  certificateNumber String            @unique
-  pdfUrl            String?
-  qrPayload         String
-  status            CertificateStatus @default(QUEUED)
-  issuedAt          DateTime?
-  registration      Registration      @relation(fields: [registrationId], references: [id])
-}
-
-model MedalDelivery {
-  id             String       @id @default(cuid())
-  registrationId String       @unique
-  courier        String?
-  trackingNumber String?
-  trackingUrl    String?
-  status         MedalStatus  @default(PENDING)
-  dispatchedAt   DateTime?
-  deliveredAt    DateTime?
-  registration   Registration @relation(fields: [registrationId], references: [id])
-}
-
-model Coupon {
-  id             String   @id @default(cuid())
-  code           String   @unique
-  discountPaise  Int
-  maxRedemptions Int?
-  redeemedCount  Int      @default(0)
-  expiresAt      DateTime?
-  createdAt      DateTime @default(now())
-}
-
-model Notification {
-  id        String   @id @default(cuid())
-  userId    String?
-  channel   String
-  title     String
-  body      String
-  readAt    DateTime?
-  createdAt DateTime @default(now())
 }

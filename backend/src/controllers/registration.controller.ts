@@ -7,6 +7,7 @@ import {
   createCertificateNumber,
   createCertificateQrPayload,
 } from "../services/certificate.service.js";
+import { upsertUserFromClerk } from "../services/user.service.js";
 import { ApiError } from "../utils/api-error.js";
 import { routeParam } from "../utils/params.js";
 import { validateBody } from "../utils/validate.js";
@@ -47,35 +48,12 @@ export async function createRegistration(request: AuthenticatedRequest, response
   let user = null;
 
   if (clerkId) {
-    user = await prisma.user.findFirst({
-      where: {
-        OR: [
-          { clerkId },
-          ...(email ? [{ email }] : []),
-        ],
-      },
+    user = await upsertUserFromClerk({
+      clerkId,
+      email,
+      name: payload.name ?? payload.shippingName,
+      phone: payload.phone ?? payload.shippingPhone,
     });
-
-    if (user) {
-      user = await prisma.user.update({
-        where: { id: user.id },
-        data: {
-          clerkId: user.clerkId ?? clerkId,
-          name: payload.name ?? payload.shippingName,
-          phone: payload.phone ?? payload.shippingPhone,
-          ...(email ? { email } : {}),
-        },
-      });
-    } else if (email) {
-      user = await prisma.user.create({
-        data: {
-          clerkId,
-          name: payload.name ?? payload.shippingName,
-          email,
-          phone: payload.phone ?? payload.shippingPhone,
-        },
-      });
-    }
   } else if (payload.userId) {
     user = await prisma.user.findUnique({ where: { id: payload.userId } });
   } else if (email) {
@@ -220,12 +198,29 @@ export async function reviewProof(request: AuthenticatedRequest, response: Respo
 }
 
 export async function getLeaderboard(request: AuthenticatedRequest, response: Response) {
-  const eventId = routeParam(request, "eventId");
+  const eventKey = routeParam(request, "eventId");
+  const distance =
+    typeof request.query.distance === "string" && request.query.distance.trim()
+      ? request.query.distance.trim()
+      : undefined;
+
+  // Accept either event id or slug
+  const event = await prisma.event.findFirst({
+    where: {
+      OR: [{ id: eventKey }, { slug: eventKey }],
+    },
+  });
+
+  if (!event) {
+    throw new ApiError(404, "Event not found");
+  }
+
   const registrations = await prisma.registration.findMany({
     where: {
-      eventId,
+      eventId: event.id,
       proofStatus: "APPROVED",
       finishTimeSeconds: { not: null },
+      ...(distance ? { distance } : {}),
     },
     orderBy: { finishTimeSeconds: "asc" },
     include: { user: true, event: true },
@@ -239,6 +234,16 @@ export async function getLeaderboard(request: AuthenticatedRequest, response: Re
       distance: registration.distance,
       finishTimeSeconds: registration.finishTimeSeconds,
       bibNumber: registration.bibNumber,
+      userId: registration.user.id,
+      clerkId: registration.user.clerkId,
+      status: "Verified" as const,
     })),
+    meta: {
+      eventId: event.id,
+      eventSlug: event.slug,
+      eventTitle: event.title,
+      distance: distance ?? null,
+      total: registrations.length,
+    },
   });
 }

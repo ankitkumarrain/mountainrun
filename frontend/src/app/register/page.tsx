@@ -7,7 +7,7 @@ export default function RegisterPage() {
       <section className="section">
         <div className="container-page max-w-3xl">
           <PageHeader
-            description="Sign in, pick your event and distance, add shipping details, then pay securely with Razorpay UPI."
+            description="Pick event and distance, add shipping, pay with UPI. After login your races also show on Dashboard."
             eyebrow="Registration"
             title="Join an event"
           />
