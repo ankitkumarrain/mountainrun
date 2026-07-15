@@ -1,6 +1,6 @@
 "use client";
 
-import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
+import { Show, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -73,16 +73,12 @@ export function AppHeader() {
 
           <div className="hidden items-center gap-2 sm:flex">
             <Show when="signed-out">
-              <SignInButton mode="modal">
-                <button className="btn btn-ghost h-9 px-3" type="button">
-                  Sign in
-                </button>
-              </SignInButton>
-              <SignUpButton mode="modal">
-                <button className="btn btn-primary h-9 px-4" type="button">
-                  Sign up
-                </button>
-              </SignUpButton>
+              <Link className="btn btn-ghost h-9 px-3" href="/sign-in">
+                Sign in
+              </Link>
+              <Link className="btn btn-primary h-9 px-4" href="/sign-up">
+                Sign up
+              </Link>
             </Show>
             <Show when="signed-in">
               <Link className="btn btn-primary h-9 px-4" href="/register">
@@ -134,24 +130,20 @@ export function AppHeader() {
             })}
             <div className="mt-1 grid grid-cols-2 gap-2 border-t border-[var(--line)] pt-2">
               <Show when="signed-out">
-                <SignInButton mode="modal">
-                  <button
-                    className="btn btn-secondary h-11 w-full"
-                    onClick={() => setOpen(false)}
-                    type="button"
-                  >
-                    Sign in
-                  </button>
-                </SignInButton>
-                <SignUpButton mode="modal">
-                  <button
-                    className="btn btn-primary h-11 w-full"
-                    onClick={() => setOpen(false)}
-                    type="button"
-                  >
-                    Sign up
-                  </button>
-                </SignUpButton>
+                <Link
+                  className="btn btn-secondary h-11 w-full"
+                  href="/sign-in"
+                  onClick={() => setOpen(false)}
+                >
+                  Sign in
+                </Link>
+                <Link
+                  className="btn btn-primary h-11 w-full"
+                  href="/sign-up"
+                  onClick={() => setOpen(false)}
+                >
+                  Sign up
+                </Link>
               </Show>
               <Show when="signed-in">
                 <Link

@@ -40,15 +40,15 @@ export default function RootLayout({
               borderRadius: "0.75rem",
             },
             elements: {
-              card: "shadow-none border border-[var(--line)]",
-              headerTitle: "tracking-tight",
               formButtonPrimary:
                 "bg-[var(--foreground)] hover:bg-[var(--accent-hover)] shadow-none",
               footerActionLink: "text-[var(--foreground)] hover:text-[var(--muted)]",
-              socialButtonsBlockButton: "border-[var(--line)]",
+              socialButtonsBlockButton: "border border-[var(--line)]",
             },
           }}
+          signInFallbackRedirectUrl="/register"
           signInUrl="/sign-in"
+          signUpFallbackRedirectUrl="/register"
           signUpUrl="/sign-up"
           afterSignOutUrl="/"
         >

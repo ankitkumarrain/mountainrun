@@ -302,21 +302,16 @@ select.input {
   font-weight: 500;
 }
 
-.auth-card {
+/* Clerk components — keep overrides light so OAuth/SSO steps never break */
+.cl-rootBox {
   width: 100%;
-  max-width: 420px;
+  margin-inline: auto;
 }
 
-.auth-card .cl-card,
-.auth-card .cl-rootBox {
-  width: 100%;
-}
-
-.auth-card .cl-card {
-  box-shadow: none !important;
-  border: 1px solid var(--line) !important;
-  border-radius: 16px !important;
-  background: #fff !important;
+.cl-cardBox,
+.cl-card {
+  width: 100% !important;
+  max-width: 100% !important;
 }
 
 @media (prefers-reduced-motion: no-preference) {

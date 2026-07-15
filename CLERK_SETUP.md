@@ -1,101 +1,72 @@
-# Clerk authentication setup
+# Clerk authentication — how to test
 
-Mountain Run already wires Clerk on both frontend and backend. You only need real API keys from the Clerk dashboard.
+## What was wrong (fixed)
 
-## What is already implemented
+1. **Sign-up required username + phone** → Google OAuth opened a broken “extra fields” page and user never finished, so Dashboard showed **0 users**.
+2. Conflicting redirect env vars and aggressive CSS broke Clerk UI.
+3. Header used **modal** sign-in (worse for Google OAuth). Now uses full pages `/sign-in` and `/sign-up`.
 
-### Frontend (`frontend/`)
+Clerk instance is now configured for:
 
-- `@clerk/nextjs` installed
-- `<ClerkProvider>` in `src/app/layout.tsx`
-- Route protection via `src/proxy.ts` (Next.js 16 middleware) for `/register` and `/admin`
-- Pages: `/sign-in`, `/sign-up`
-- Header Sign in / Sign up / `UserButton`
-- Registration form sends `Authorization: Bearer <session token>` to the API
+- Email + password
+- Google OAuth
+- No required username / phone
 
-### Backend (`backend/`)
+## How to test (local)
 
-- `@clerk/backend` installed
-- `requireClerkAuth` verifies Bearer tokens on:
-  - `POST /api/registrations`
-  - `POST /api/registrations/:id/proof`
-  - `POST /api/payments/create-order`
-  - `POST /api/payments/verify`
-- `requireAdmin` checks Clerk user metadata `role` is `admin` or `super_admin`
-- Registrations link users by `clerkId` in Prisma
+1. Restart frontend so env changes load:
 
-## 1. Create a Clerk application
+```bash
+cd frontend
+npm run dev
+```
 
-1. Open [dashboard.clerk.com](https://dashboard.clerk.com)
-2. Create an application (Email + Password is enough)
-3. Copy **Publishable key** (`pk_test_...`) and **Secret key** (`sk_test_...`)
+2. Open **http://localhost:3000/sign-up** (hard refresh: `Ctrl+Shift+R`).
 
-## 2. Add keys to env files
+3. Try **either**:
 
-### `frontend/.env` (or `.env.local`)
+### A) Google
+
+- Click **Continue with Google**
+- Pick account
+- You should land on `/register` with a profile icon in the header
+
+### B) Email + password
+
+- Enter email + password (min 8 chars)
+- Complete sign-up
+- Header shows profile icon
+
+4. Confirm user exists:
+
+- Clerk Dashboard → **Users** (Development instance)
+- Or CLI: `clerk users list`
+
+## Dashboard tip
+
+Top-left of Clerk Dashboard must say **Development** (not Production).  
+This project only has a **development** instance configured.
+
+## Allowed URLs (Dashboard)
+
+Clerk → **Configure** → **Domains / Paths** (names vary):
+
+- App URL: `http://localhost:3000`
+- Sign-in: `/sign-in`
+- Sign-up: `/sign-up`
+- After auth: `/register`
+
+If Google still fails on a custom domain later, add that domain in Clerk Allowed origins.
+
+## Env files (frontend)
 
 ```env
-NEXT_PUBLIC_API_URL="http://127.0.0.1:4000"
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_xxxxxxxx"
-CLERK_SECRET_KEY="sk_test_xxxxxxxx"
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_..."
+CLERK_SECRET_KEY="sk_test_..."
 NEXT_PUBLIC_CLERK_SIGN_IN_URL="/sign-in"
 NEXT_PUBLIC_CLERK_SIGN_UP_URL="/sign-up"
-NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL="/register"
-NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL="/register"
+NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL="/register"
+NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL="/register"
 ```
 
-### `backend/.env`
-
-```env
-CLERK_SECRET_KEY="sk_test_xxxxxxxx"
-CLERK_PUBLISHABLE_KEY="pk_test_xxxxxxxx"
-```
-
-Use the **same** Clerk app keys on frontend and backend.
-
-## 3. Clerk Dashboard settings
-
-In Clerk → **Configure** → **Paths** (or similar):
-
-- Sign-in URL: `/sign-in`
-- Sign-up URL: `/sign-up`
-- After sign-in: `/register`
-- After sign-up: `/register`
-
-Allowed origins / redirect URLs:
-
-- `http://localhost:3000`
-- `http://127.0.0.1:3000`
-
-## 4. Make an admin user (optional)
-
-1. Sign up once in the app
-2. Clerk Dashboard → Users → open that user
-3. Public metadata:
-
-```json
-{
-  "role": "admin"
-}
-```
-
-## 5. Run the app
-
-```bash
-cd backend && npm run dev
-```
-
-```bash
-cd frontend && npm run dev
-```
-
-Open `http://localhost:3000`, click **Sign up**, then go to `/register`.
-
-## Local note without keys
-
-If `CLERK_SECRET_KEY` is missing/placeholder:
-
-- **Backend** (non-production): auth middleware allows requests (dev bypass)
-- **Frontend**: Clerk will not work until publishable + secret keys are set
-
-Never deploy production without real Clerk keys.
+Backend needs the same `CLERK_SECRET_KEY` for API token verification.

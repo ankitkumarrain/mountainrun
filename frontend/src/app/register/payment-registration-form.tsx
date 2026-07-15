@@ -1,6 +1,6 @@
 "use client";
 
-import { SignInButton, SignUpButton, useAuth, useUser } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Field, inputClass } from "../components/app-shell";
@@ -96,21 +96,11 @@ export function PaymentRegistrationForm() {
           and pay with UPI.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
-          <SignInButton mode="modal" forceRedirectUrl="/register">
-            <button className="btn btn-primary" type="button">
-              Sign in
-            </button>
-          </SignInButton>
-          <SignUpButton mode="modal" forceRedirectUrl="/register">
-            <button className="btn btn-secondary" type="button">
-              Create account
-            </button>
-          </SignUpButton>
-          <Link
-            className="btn btn-ghost"
-            href="/sign-up"
-          >
-            Full page sign-up
+          <Link className="btn btn-primary" href="/sign-in">
+            Sign in
+          </Link>
+          <Link className="btn btn-secondary" href="/sign-up">
+            Create account
           </Link>
         </div>
       </div>
